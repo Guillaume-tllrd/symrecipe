@@ -1,0 +1,22 @@
+services:
+  database: # Conteneur pour la base de données
+    container_name: bddrecipe
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: secret # Mot de passe root
+      MYSQL_DATABASE: symrcipe # Nom de la base de données
+      MYSQL_USER: symfony # Utilisateur de la base de données
+      MYSQL_PASSWORD: symfony # Mot de passe de la base de données
+    ports:
+      - '4306:3306' # Ports utilisés (Port externe:Port interne au conteneur)
+  phpma: # Conteneur pour PHPMyAdmin
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadminRecipe
+    environment:
+      PMA_ARBITRARY: 1 # Permet d'avoir le choix du serveur lors de la connexion
+      PMA_HOST: database # Nom du service MySQL
+      PMA_USER: root # Utilisateur avec lequel se connecter
+      PMA_PASSWORD: secret # Mot de passe de l'utilisateur
+      UPLOAD_LIMIT: 20M # Limite d'envoi de fichiers
+    ports:
+      - 8891:80 # Ports utilisés (Port externe:Port interne au conteneur)
