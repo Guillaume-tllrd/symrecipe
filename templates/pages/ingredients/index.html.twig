@@ -1,0 +1,50 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}SymRecipe - Mes ingrédients
+{% endblock %}
+
+{% block body %}
+	<div
+		class="container mt-4">
+		{# faire une condition au cas ou ingredients est null = 0: #}
+		{% if not ingredients.items is same as ([]) %}
+
+			<h1>Mes ingrédients</h1>
+
+			<div class="count">
+				<small>Il y a
+					{{ ingredients.getTotalItemCount }}
+					ingrédients au total.</small>
+			</div>
+			<table class="table table-hover ">
+				<thead>
+					<tr>
+						<th scope="col">Numéro</th>
+						<th scope="col">Nom</th>
+						<th scope="col">Prix</th>
+						<th scope="col">Date de création</th>
+					</tr>
+				</thead>
+				<tbody></tbody>
+			</pre>
+			{% for ingredient in ingredients %}
+				<tr class="table-primary">
+
+					<th scope="row">{{ingredient.id}}</th>
+					<td>{{ingredient.name}}</td>
+					<td>{{ingredient.price}}</td>
+					<td>{{ingredient.createdAt|date('d/m/y')}}</td>
+				</tr>
+			{% endfor %}
+
+		</tbody>
+
+	</table>
+
+	{# réupérer depuis : https://github.com/KnpLabs/KnpPaginatorBundle/blob/master/README.md#}
+	<div class="navigation d-flex justify-content-center">
+		{{ knp_pagination_render(ingredients) }}
+	</div>
+{% else %}
+	<p>Il n'y a pas d'ingrédients</p>
+{% endif %}</div>{% endblock %}
