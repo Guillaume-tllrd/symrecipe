@@ -11,6 +11,7 @@
 
 			<h1>Mes ingrédients</h1>
 
+			<a class="btn btn-primary" href="{{path('new_ingredient')}}">Créer un ingrédient</a>
 			<div class="count">
 				<small>Il y a
 					{{ ingredients.getTotalItemCount }}
@@ -23,6 +24,8 @@
 						<th scope="col">Nom</th>
 						<th scope="col">Prix</th>
 						<th scope="col">Date de création</th>
+						<th>Edition</th>
+						<th>Suppression</th>
 					</tr>
 				</thead>
 				<tbody></tbody>
@@ -34,6 +37,12 @@
 					<td>{{ingredient.name}}</td>
 					<td>{{ingredient.price}}</td>
 					<td>{{ingredient.createdAt|date('d/m/y')}}</td>
+					<td>
+						<a class="btn btn-info" href="{{path('edit_ingredient', {id:ingredient.id})}}">Modifier</a>
+					</td>
+					<td>
+						<a class="btn btn-warning" href="{{path('delete_ingredient', {id:ingredient.id})}}">Supprimer</a>
+					</td>
 				</tr>
 			{% endfor %}
 

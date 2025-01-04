@@ -5,10 +5,13 @@ namespace App\Entity;
 use App\Repository\IngredientRepository;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
 // on rajoute des contraintes à nos colonnes avec assert
 
 #[ORM\Entity(repositoryClass: IngredientRepository::class)]
+#[UniqueEntity('name')]
+// si on veut que le nom soit unique il faut rajouter uniqueEntity
 class Ingredient
 {
     #[ORM\Id]
