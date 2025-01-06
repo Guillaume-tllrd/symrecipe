@@ -10,7 +10,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
-use Symfony\Component\Validator\Constraints\NotBlank;
+
 
 // https://symfony.com/doc/current/doctrine/events.html, on rajoute : #[ORM\HasLifecycleCallbacks] a cause de updated _at
 #[UniqueEntity('name')]
@@ -24,7 +24,7 @@ class Recipe
     private ?int $id = null;
 
     #[ORM\Column(length: 50)]
-    #[NotBlank()]
+    #[Assert\NotBlank()]
     #[Assert\Length(min: 2, max: 50)]
     private ?string $name = null;
 
@@ -44,7 +44,7 @@ class Recipe
     private ?int $difficulty = null;
 
     #[ORM\Column(type: Types::TEXT)]
-    #[NotBlank()]
+    #[Assert\NotBlank()]
     private ?string $description = null;
 
     #[ORM\Column(nullable: true)]
