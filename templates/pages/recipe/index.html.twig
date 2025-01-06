@@ -1,0 +1,75 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}SymRecipe - Mes ingrédients
+{% endblock %}
+
+{% block body %}
+	<div
+		class="container mt-4">
+		{# faire une condition au cas ou ingredients est null = 0: #}
+		{% if not recipes.items is same as ([]) %}
+
+			<h1>Mes recettes</h1>
+
+			<a class="btn btn-primary" href="{{path('new_recipe')}}">Créer une recette</a>
+			<div class="count">
+				<small>Il y a
+					{{ recipes.getTotalItemCount }}
+					recettes au total.</small>
+			</div>
+			<table class="table table-hover ">
+				<thead>
+					<tr>
+						<th scope="col">Numéro</th>
+						<th scope="col">Nom</th>
+						<th scope="col">Prix</th>
+						<th scope="col">Difficulté</th>
+						<th scope="col">Date de création</th>
+						<th>Edition</th>
+						<th>Suppression</th>
+					</tr>
+				</thead>
+				<tbody>
+
+					{% for recipe in recipes %}
+						<tr class="table-primary">
+
+							<th scope="row">{{recipe.id}}</th>
+							<td>{{recipe.name}}</td>
+
+
+							<td>
+								{% if recipe.price is null %}Non renseigné
+								{% else %}
+									{{recipe.price}}
+								{% endif %}
+							</td>
+							<td>
+								{% if recipe.difficulty is null %}Non renseigné
+								{% else %}
+									{{recipe.difficulty}}
+								{% endif %}
+							</td>
+							<td>{{recipe.createdAt|date('d/m/y')}}</td>
+							<td>
+								<a class="btn btn-info" href="{{path('edit_recipe', {id:recipe.id})}}">Modifier</a>
+							</td>
+							<td>
+								<a class="btn btn-warning" href="{{path('delete_recipe', {id:recipe.id})}}">Supprimer</a>
+							</td>
+						</tr>
+					{% endfor %}
+
+				</tbody>
+
+			</table>
+
+			{# réupérer depuis : https://github.com/KnpLabs/KnpPaginatorBundle/blob/master/README.md#}
+			<div class="navigation d-flex justify-content-center">
+				{{ knp_pagination_render(recipes) }}
+			</div>
+		{% else %}
+			<p>Il n'y a pas de recettes</p>
+		{% endif %}
+	</div>
+{% endblock %}
