@@ -66,7 +66,8 @@ class RegistrationType extends AbstractType
             ])
             // pour mettre un deuxieme champ de mdp on insert le RepeatedType
             // on eneleve passord pour plainPassword, on suit notre logique avec l'entityListenner
-            ->add('plainPassword', RepeatedType::class, [
+            // j'ai rechangé password à la place de plainPassword
+            ->add('password', RepeatedType::class, [
                 'type' => PasswordType::class,
                 'first_options' => [
                     'label' => 'Mot de passe',

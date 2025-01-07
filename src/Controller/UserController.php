@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Form\UserPasswordType;
 use App\Form\UserType;
+use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -53,7 +54,7 @@ class UserController extends AbstractController
 
     #[Route('utilisateur/edition-mot-de-passe/{id}', name: 'edit_user_password', methods: ['GET', 'POST'])]
     /**
-     * This controller allow us to edit password
+     * This controller allow us to edit user's password
      *
      * @param User $user
      * @param Request $request
@@ -75,15 +76,23 @@ class UserController extends AbstractController
 
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
-            // dd($form->getData()['plainPassword']);
+            // dd($form->getData());
             if ($hasher->isPasswordValid($user, $form->getData()['plainPassword'])) {
+                $user->setUpdatedAt(new DateTimeImmutable());
                 $user->setPassword(
                     $hasher->hashPassword(
                         $user,
                         $form->getData()['newPassword']
                     )
                 );
-
+                // on rechange eg on utilise le entityListenner mais on a rajouté setUpdateAt pour faire fonctionne le preUpdate dans le listenner
+                // $user->setPassword(
+                //     $hasher->hashPassword(
+                //         $user,
+                //         $form->getData()['newPassword']
+                //     )
+                // );
+                // arreté à 5:16:33
                 $em->persist($user);
                 $em->flush();
                 $this->addFlash('success', 'Le mot de passe a été modifié.');
@@ -91,7 +100,6 @@ class UserController extends AbstractController
             } else {
                 $this->addFlash('warning', 'Le mot de passe renseigné est incorrect');
             }
-            // arreté à 5:04:38
         };
         return $this->render('pages/user/edit_password.html.twig', [
             'form' => $form->createView()
