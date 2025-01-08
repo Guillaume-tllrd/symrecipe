@@ -11,6 +11,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 class IngredientsController extends AbstractController
 {
@@ -23,6 +24,7 @@ class IngredientsController extends AbstractController
      * @return Response
      */
     #[Route('/ingredients', name: 'app_ingredients', methods: ['GET'])]
+    #[IsGranted('ROLE_USER')]
     public function index(IngredientRepository $ingredientRepository, PaginatorInterface $paginator, Request $request): Response
     {
         // comme on assigne les ingrédient à un utilisateur on change de méthode de findAll à findBy
@@ -41,6 +43,7 @@ class IngredientsController extends AbstractController
      * @return Response
      */
     #[Route('/ingredients/nouveau', name: 'new_ingredient', methods: ['GET', 'POST'])]
+    #[IsGranted('ROLE_USER')]
     public function new(Request $request, EntityManagerInterface $em): Response
     {
         $ingredients = new Ingredient();
@@ -63,8 +66,13 @@ class IngredientsController extends AbstractController
     }
 
     #[Route('ingredients/edition/{id}', name: 'edit_ingredient', methods: ['GET', 'POST'])]
+    // #[Security("is_granted('ROLE_USER') and user === ingredient.getUser()")] NO LONGER AVAILABLE
     public function edit(Ingredient $ingredient, Request $request, EntityManagerInterface $em): Response
     {
+        // On rajoute des permissions: 
+        if ($ingredient->getUser() !== $this->getUser()) {
+            throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à modifier cet ingrédient.');
+        }
         // on utilise le repository pour récup l'ingrédient
         // $ingredient = $ingredientRepository->findOneBy(['id' => $id]); on utilise l'entité pour que l'ingredient soit directement recoonu pas besoin d'utiliser le repository
         $form = $this->createForm(IngredientsType::class, $ingredient);

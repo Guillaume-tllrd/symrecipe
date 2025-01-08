@@ -11,6 +11,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 class RecipeController extends AbstractController
 {
@@ -23,6 +24,7 @@ class RecipeController extends AbstractController
      * @return Response
      */
     #[Route('/recette', name: 'app_recette', methods: ['GET'])]
+
     public function index(PaginatorInterface $paginator, RecipeRepository $recipeRepository, Request $request): Response
     {
         // praeil que ingredient on change la méthode finAll pour findBy
@@ -77,6 +79,9 @@ class RecipeController extends AbstractController
     public function edit(Recipe $recipe, Request $request, EntityManagerInterface $em): Response
     {
 
+        if ($recipe->getUser() !== $this->getUser()) {
+            throw $this->createAccessDeniedException("Vous n'êtes pas autorisé à modifier cette recette.");
+        }
         $form = $this->createForm(RecipeType::class, $recipe);
 
         $form->handleRequest($request);
