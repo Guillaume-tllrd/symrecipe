@@ -2,8 +2,11 @@
 
 namespace App\Controller;
 
+use App\Entity\Mark;
 use App\Entity\Recipe;
+use App\Form\MarkType;
 use App\Form\RecipeType;
+use App\Repository\MarkRepository;
 use App\Repository\RecipeRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Knp\Component\Pager\PaginatorInterface;
@@ -44,7 +47,7 @@ class RecipeController extends AbstractController
         Request $request
     ): Response {
         $recipes = $paginator->paginate(
-            $recipeRepository->findPulicRecipe(12),
+            $recipeRepository->findPulicRecipe(null),
             $request->query->getInt('page', 1),
             10
         );
@@ -53,14 +56,14 @@ class RecipeController extends AbstractController
         ]);
     }
 
-    #[Route('recette/{id}', name: 'recipe.show', methods: ['GET'])]
+    #[Route('recette/{id}', name: 'recipe.show', methods: ['GET', 'POST'])]
     /**
      * This controller allow us to see a recipe if this one is public
      *
      * @param Recipe $recipe
      * @return Response
      */
-    public function show(Recipe $recipe): Response
+    public function show(Recipe $recipe, Request $request, MarkRepository $markRepository, EntityManagerInterface $em): Response
     {
         if (!$this->getUser()) {
             return $this->redirectToRoute('app_login');
@@ -69,8 +72,39 @@ class RecipeController extends AbstractController
         if ($recipe->IsPublic() !== true) {
             throw $this->createAccessDeniedException("Cette recette n'est pas en public.");
         }
+
+
+        $mark = new Mark();
+        $form = $this->createForm(MarkType::class, $mark);
+
+
+        $form->handleRequest($request);
+        if ($form->isSubmitted() && $form->isValid()) {
+            // dd($form->getData());
+            $mark->setUser($this->getUser())->setRecipe($recipe);
+
+            // pour être sûr qu'un user ne peut pas faire 2 fois la même recette:
+            $existingMark = $markRepository->findOneBy([
+                'user' => $this->getUser(),
+                'recipe' => $recipe
+            ]);
+
+            // si il n'ya pas d'existingMark alors tu persist sinon tu prend tu refixe
+            if (!$existingMark) {
+                $em->persist($mark);
+            } else {
+                $existingMark->setMark(
+                    $form->getData()->getMark()
+                );
+                // dd($existingMark);
+            }
+            $em->flush();
+            $this->addFlash('success', 'Votre note a bien été prise en compte.');
+            return $this->redirectToRoute('recipe.show', ['id' => $recipe->getId()]);
+        }
         return $this->render('pages/recipe/show.html.twig', [
-            'recipe' => $recipe
+            'recipe' => $recipe,
+            'form' => $form->createView()
         ]);
     }
 

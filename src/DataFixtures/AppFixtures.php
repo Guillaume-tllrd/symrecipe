@@ -3,6 +3,7 @@
 namespace App\DataFixtures;
 
 use App\Entity\Ingredient;
+use App\Entity\Mark;
 use App\Entity\Recipe;
 use App\Entity\User;
 use Doctrine\Bundle\FixturesBundle\Fixture;
@@ -58,6 +59,7 @@ class AppFixtures extends Fixture
         }
 
         // recipes
+        $recipes = [];
         for ($j = 0; $j < 25; $j++) {
             $recipe = new Recipe();
             $recipe->setName($this->faker->word())
@@ -73,11 +75,25 @@ class AppFixtures extends Fixture
             for ($k = 0; $k < mt_rand(5, 15); $k++) {
                 $recipe->addIngredient($ingredients[mt_rand(0, count($ingredients) - 1)]);
             }
-
+            $recipes[] = $recipe;
             $manager->persist($recipe);
             // ensuite symfony console doctrine:fixtures:load
         }
 
+        //Marks
+        // on place d'abord les recettes dans un tableau cf au-dessus: $recipes=[]
+        foreach ($recipes as $recipe) {
+            // on fait une boucle for pour qu'une recette est entre 0 et 4 notes
+            for ($i = 0; $i < mt_rand(0, 4); $i++) {
+                $mark = new Mark();
+                $mark->setMark(mt_rand(1, 5))
+                    // on prend un users au hards dans $users[] avec mt_rand
+                    ->setUser($users[mt_rand(0, count($users) - 1)])
+                    ->setRecipe($recipe);
+
+                $manager->persist($mark);
+            }
+        }
         $manager->flush();
     }
 }
