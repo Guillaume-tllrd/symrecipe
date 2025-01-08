@@ -11,7 +11,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 class RecipeController extends AbstractController
 {
@@ -37,6 +36,45 @@ class RecipeController extends AbstractController
             'recipes' => $recipes,
         ]);
     }
+    // /!\ Faire attention à mettre la route recette/publique avant recette/{id} sinon il y a un conflit
+    #[Route('recette/publique', name: 'recipe.index.public', methods: ['GET'])]
+    public function indexPublic(
+        PaginatorInterface $paginator,
+        RecipeRepository $recipeRepository,
+        Request $request
+    ): Response {
+        $recipes = $paginator->paginate(
+            $recipeRepository->findPulicRecipe(12),
+            $request->query->getInt('page', 1),
+            10
+        );
+        return $this->render('pages/recipe/index_public.html.twig', [
+            'recipes' => $recipes
+        ]);
+    }
+
+    #[Route('recette/{id}', name: 'recipe.show', methods: ['GET'])]
+    /**
+     * This controller allow us to see a recipe if this one is public
+     *
+     * @param Recipe $recipe
+     * @return Response
+     */
+    public function show(Recipe $recipe): Response
+    {
+        if (!$this->getUser()) {
+            return $this->redirectToRoute('app_login');
+        }
+        // on met une permission enfonction du bool
+        if ($recipe->IsPublic() !== true) {
+            throw $this->createAccessDeniedException("Cette recette n'est pas en public.");
+        }
+        return $this->render('pages/recipe/show.html.twig', [
+            'recipe' => $recipe
+        ]);
+    }
+
+
 
     /**
      * This controller allow us to create a new recipe

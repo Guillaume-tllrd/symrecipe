@@ -1,0 +1,36 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}SymRecipe - Mes ingrédients
+{% endblock %}
+
+{% block body %}
+	<div
+		class="container mt-4">
+		{# faire une condition au cas ou ingredients est null = 0: #}
+		{% if not recipes.items is same as ([]) %}
+
+			<h1>Recette de la communauté</h1>
+			<div class="d-flex justify-content-center flex-wrap">
+				{% for recipe in recipes %}
+					<div class="card border-primary mb-3" style="max-width: 20rem;">
+						<div class="card-header">Recete n°
+							{{recipe.id}}</div>
+						<div class="card-body">
+							<h4 class="card-title">{{recipe.name}}</h4>
+							{# on met un filtre avec slice on coupe au 100e caractères puis ont met 3 points #}
+							<p class="card-text">{{recipe.description|slice(0,100)~'[...]'}}</p>
+						</div>
+					</div>
+				{% endfor %}
+			</div>
+
+
+			{# réupérer depuis : https://github.com/KnpLabs/KnpPaginatorBundle/blob/master/README.md#}
+			<div class="navigation d-flex justify-content-center">
+				{{ knp_pagination_render(recipes) }}
+			</div>
+		{% else %}
+			<p>Il n'y a pas de recettes</p>
+		{% endif %}
+	</div>
+{% endblock %}
