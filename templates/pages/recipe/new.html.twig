@@ -6,6 +6,7 @@
 {% block body %}
 	<div class="container">
 		<h1 class="mt-4">Création d'une recette</h1>
+
 		{{ form_start(form) }}
 		<div class="form-group">
 
@@ -25,6 +26,7 @@
 			{{ form_widget(form.nbPeople) }}
 			<div class="form-error">{{ form_errors(form.nbPeople) }}</div>
 		</div>
+		{{form_row(form.images)}}
 		<div class="form-group">
 
 			{{ form_label(form.difficulty) }}
@@ -37,6 +39,7 @@
 			{{ form_widget(form.description) }}
 			<div class="form-error">{{ form_errors(form.description) }}</div>
 		</div>
+		{# {{form_row(form.imageFile)}} #}
 		<div class="form-group">
 
 			{{ form_label(form.price) }}

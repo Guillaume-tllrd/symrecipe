@@ -2,15 +2,18 @@
 
 namespace App\Controller;
 
+use App\Entity\Images;
 use App\Entity\Mark;
 use App\Entity\Recipe;
 use App\Form\MarkType;
 use App\Form\RecipeType;
 use App\Repository\MarkRepository;
 use App\Repository\RecipeRepository;
+use App\Service\PictureService;
 use Doctrine\ORM\EntityManagerInterface;
 use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -26,7 +29,6 @@ class RecipeController extends AbstractController
      * @return Response
      */
     #[Route('/recette', name: 'app_recette', methods: ['GET'])]
-
     public function index(PaginatorInterface $paginator, RecipeRepository $recipeRepository, Request $request): Response
     {
         // praeil que ingredient on change la méthode finAll pour findBy
@@ -69,7 +71,7 @@ class RecipeController extends AbstractController
             return $this->redirectToRoute('app_login');
         }
         // on met une permission enfonction du bool
-        if ($recipe->IsPublic() !== true) {
+        if ($recipe->IsPublic() !== true && $this->getUser() !== $recipe->getUser()) {
             throw $this->createAccessDeniedException("Cette recette n'est pas en public.");
         }
 
@@ -118,7 +120,7 @@ class RecipeController extends AbstractController
      * @return Response
      */
     #[Route('/recette/creation', name: 'new_recipe', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $em): Response
+    public function new(Request $request, EntityManagerInterface $em, PictureService $pictureService): Response
     {
         $recipe = new Recipe();
         $form = $this->createForm(RecipeType::class, $recipe);
@@ -128,14 +130,27 @@ class RecipeController extends AbstractController
             // dd($form->getData());
             $recipe = $form->getData();
             $recipe->setUser($this->getUser());
+            $images = $form->get('images')->getData();
 
+            foreach ($images as $image) {
+                // on définit le dossier de destination:
+                $folder = 'recipes';
+
+                // on appelle le service d'ajout PictureService
+                $fichier = $pictureService->add($image, $folder, 300, 300);
+
+                $img = new Images();
+                $img->setName($fichier);
+                $recipe->addImage($img);
+            }
             $em->persist($recipe);
             $em->flush();
             $this->addFlash('success', 'Votre recette a été créée avec succès!');
             return $this->redirectToRoute("app_recette");
         }
         return $this->render('pages/recipe/new.html.twig', [
-            'form' => $form->createView()
+            'form' => $form->createView(),
+
         ]);
     }
 
@@ -148,7 +163,7 @@ class RecipeController extends AbstractController
      * @return Response
      */
     #[Route('/recette/edition/{id}', name: 'edit_recipe', methods: ['GET', 'POST'])]
-    public function edit(Recipe $recipe, Request $request, EntityManagerInterface $em): Response
+    public function edit(Recipe $recipe, Request $request, EntityManagerInterface $em, PictureService $pictureService): Response
     {
 
         if ($recipe->getUser() !== $this->getUser()) {
@@ -161,13 +176,27 @@ class RecipeController extends AbstractController
             // dd($form->getData());
             $recipe = $form->getData();
 
+            $images = $form->get('images')->getData();
+
+            foreach ($images as $image) {
+                // on définit le dossier de destination:
+                $folder = 'recipes';
+
+                // on appelle le service d'ajout PictureService
+                $fichier = $pictureService->add($image, $folder, 300, 300);
+
+                $img = new Images();
+                $img->setName($fichier);
+                $recipe->addImage($img);
+            }
             $em->persist($recipe);
             $em->flush();
             $this->addFlash('success', 'Votre recette a été modifiée avec succès!');
             return $this->redirectToRoute("app_recette");
         }
         return $this->render('pages/recipe/edit.html.twig', [
-            'form' => $form->createView()
+            'form' => $form->createView(),
+            'recipe' => $recipe
         ]);
     }
 
@@ -187,5 +216,29 @@ class RecipeController extends AbstractController
 
         $this->addFlash('success', 'Votre recette a été supprimé avec succès!');
         return $this->redirectToRoute("app_ingredients");
+    }
+
+    #[Route('/suppression/image/{id}', name: 'delete_image', methods: ['DELETE'])]
+    public function deleteImage(Images $image, Request $request, EntityManagerInterface $em, PictureService $pictureService): JsonResponse
+    {
+        // On récupère le contenu de la requête 
+        $data = json_decode($request->getContent(), true);
+        // on récupère e csrfToken qui s'appelle delete dans data-token depuis le a dans le form:
+        if ($this->isCsrfTokenValid('delete' . $image->getId(), $data['_token'])) {
+            // le token csrf est valide
+            // on récupère le nom de l'image:
+            $nom = $image->getName();
+
+            if ($pictureService->delete($nom, 'recipes', 300, 300)) {
+                // on envoie à la bdd
+                $em->remove($image);
+                $em->flush();
+
+                return new JsonResponse(["success" => true], 200);
+            }
+            // si on rntre dans pas dans le if , la suppreission a échoué: 
+            return new JsonResponse(["error" => 'Erreur de suppression'], 400);
+        }
+        return new JsonResponse(["error" => 'Token invalide'], 400);
     }
 }

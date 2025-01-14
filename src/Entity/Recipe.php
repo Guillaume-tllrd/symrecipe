@@ -84,12 +84,19 @@ class Recipe
 
     private ?float $average = null;
 
+    /**
+     * @var Collection<int, Images>
+     */
+    #[ORM\OneToMany(targetEntity: Images::class, mappedBy: 'recipe', orphanRemoval: true, cascade: ['persist'])]
+    private Collection $images;
+
     public function __construct()
     {
         $this->ingredients = new ArrayCollection();
         $this->created_at = new DateTimeImmutable();
         $this->updated_at = new DateTimeImmutable();
         $this->marks = new ArrayCollection();
+        $this->images = new ArrayCollection();
     }
 
     #[ORM\PrePersist]
@@ -303,5 +310,35 @@ class Recipe
         $this->average = $total / count($marks);
 
         return $this->average;
+    }
+
+    /**
+     * @return Collection<int, Images>
+     */
+    public function getImages(): Collection
+    {
+        return $this->images;
+    }
+
+    public function addImage(Images $image): static
+    {
+        if (!$this->images->contains($image)) {
+            $this->images->add($image);
+            $image->setRecipe($this);
+        }
+
+        return $this;
+    }
+
+    public function removeImage(Images $image): static
+    {
+        if ($this->images->removeElement($image)) {
+            // set the owning side to null (unless already changed)
+            if ($image->getRecipe() === $this) {
+                $image->setRecipe(null);
+            }
+        }
+
+        return $this;
     }
 }

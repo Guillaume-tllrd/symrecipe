@@ -2,7 +2,8 @@
 
 {% block body %}
 	<div class="container">
-		<h1 class="mt-4">Modification d'une recette</h1>
+		<h1 class="mt-4">Modification de la recette:
+			{{recipe.name}}</h1>
 		{# https://symfony.com/doc/current/form/form_customization.html #}
 		{{ form_start(form) }}
 		<div class="form-group">
@@ -29,12 +30,20 @@
 			{{ form_widget(form.difficulty) }}
 			<div class="form-error">{{ form_errors(form.difficulty) }}</div>
 		</div>
+
 		<div class="form-group">
 
 			{{ form_label(form.description) }}
 			{{ form_widget(form.description) }}
 			<div class="form-error">{{ form_errors(form.description) }}</div>
 		</div>
+		{% for image in recipe.images %}
+			<div>
+				<img src="{{ asset('assets/uploads/recipes/mini/300x300-' ~ image.name ) }}" alt="Image" width="150">
+				<a href="{{ path('delete_image', {id: image.id}) }}" data-delete data-token="{{ csrf_token('delete' ~ image.id) }}">Supprimer</a>
+				{# génère un token de sécurite pour m'assur que le form est bien valide #}
+			</div>
+		{% endfor %}
 		<div class="form-group">
 
 			{{ form_label(form.price) }}
