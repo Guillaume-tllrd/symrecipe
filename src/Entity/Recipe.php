@@ -55,7 +55,7 @@ class Recipe
     #[ORM\Column]
     private ?bool $isFavorite = null;
 
-    #[ORM\Column]
+    #[ORM\Column(nullable: true)]
     private ?bool $isPublic = null;
 
     #[ORM\Column]

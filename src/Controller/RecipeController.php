@@ -117,6 +117,7 @@ class RecipeController extends AbstractController
      *
      * @param Request $request
      * @param EntityManagerInterface $em
+     * @param PictureService $pictureService
      * @return Response
      */
     #[Route('/recette/creation', name: 'new_recipe', methods: ['GET', 'POST'])]
@@ -127,11 +128,11 @@ class RecipeController extends AbstractController
 
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
-            // dd($form->getData());
+
             $recipe = $form->getData();
             $recipe->setUser($this->getUser());
             $images = $form->get('images')->getData();
-
+            // dd($form->getData());
             foreach ($images as $image) {
                 // on définit le dossier de destination:
                 $folder = 'recipes';
