@@ -9,11 +9,15 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+// pour email:
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
+// use Symfony\Component\Mime\Email;
 
 class ContactController extends AbstractController
 {
     #[Route('/contact', name: 'app_contact')]
-    public function index(Request $request, EntityManagerInterface $manager): Response
+    public function index(Request $request, EntityManagerInterface $manager, MailerInterface $mailer): Response
     {
         $contact = new Contact();
         if ($this->getUser()) {
@@ -27,6 +31,27 @@ class ContactController extends AbstractController
             $contact = $form->getData();
             $manager->persist($contact);
             $manager->flush();
+
+            // email, copié depuis: https://symfony.com/doc/current/mailer.html
+            $email = (new TemplatedEmail())
+                ->from($contact->getEmail())
+                ->to('admin@symrecipe.com')
+                //->cc('cc@example.com')
+                //->bcc('bcc@example.com')
+                //->replyTo('fabien@example.com')
+                //->priority(Email::PRIORITY_HIGH)
+                ->subject($contact->getSubject())
+                // path of the Twig template to render
+                ->htmlTemplate('emails/contact.html.twig')
+
+                // on récupère la var contact dans le fichier twig via le context
+                ->context([
+                    'contact' => $contact,
+
+                ]);
+
+            $mailer->send($email);
+
 
             $this->addFlash('success', 'Votre demande a été envoyée avec succès!');
             return $this->redirectToRoute("app_contact");
