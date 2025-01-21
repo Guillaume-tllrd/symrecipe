@@ -41,6 +41,49 @@ class RecipeController extends AbstractController
             'recipes' => $recipes,
         ]);
     }
+
+    /**
+     * This controller allow us to create a new recipe
+     *
+     * @param Request $request
+     * @param EntityManagerInterface $em
+     * @param PictureService $pictureService
+     * @return Response
+     */
+    #[Route('/recette/creation', name: 'new_recipe', methods: ['GET', 'POST'])]
+    public function new(Request $request, EntityManagerInterface $em, PictureService $pictureService): Response
+    {
+        $recipe = new Recipe();
+        $form = $this->createForm(RecipeType::class, $recipe);
+
+        $form->handleRequest($request);
+        if ($form->isSubmitted() && $form->isValid()) {
+
+            $recipe = $form->getData();
+            $recipe->setUser($this->getUser());
+            $images = $form->get('images')->getData();
+            // dd($form->getData());
+            foreach ($images as $image) {
+                // on définit le dossier de destination:
+                $folder = 'recipes';
+
+                // on appelle le service d'ajout PictureService
+                $fichier = $pictureService->add($image, $folder, 300, 300);
+
+                $img = new Images();
+                $img->setName($fichier);
+                $recipe->addImage($img);
+            }
+            $em->persist($recipe);
+            $em->flush();
+            $this->addFlash('success', 'Votre recette a été créée avec succès!');
+            return $this->redirectToRoute("app_recette");
+        }
+        return $this->render('pages/recipe/new.html.twig', [
+            'form' => $form->createView(),
+
+        ]);
+    }
     // /!\ Faire attention à mettre la route recette/publique avant recette/{id} sinon il y a un conflit
     #[Route('recette/publique', name: 'recipe.index.public', methods: ['GET'])]
     public function indexPublic(
@@ -112,48 +155,6 @@ class RecipeController extends AbstractController
 
 
 
-    /**
-     * This controller allow us to create a new recipe
-     *
-     * @param Request $request
-     * @param EntityManagerInterface $em
-     * @param PictureService $pictureService
-     * @return Response
-     */
-    #[Route('/recette/creation', name: 'new_recipe', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $em, PictureService $pictureService): Response
-    {
-        $recipe = new Recipe();
-        $form = $this->createForm(RecipeType::class, $recipe);
-
-        $form->handleRequest($request);
-        if ($form->isSubmitted() && $form->isValid()) {
-
-            $recipe = $form->getData();
-            $recipe->setUser($this->getUser());
-            $images = $form->get('images')->getData();
-            // dd($form->getData());
-            foreach ($images as $image) {
-                // on définit le dossier de destination:
-                $folder = 'recipes';
-
-                // on appelle le service d'ajout PictureService
-                $fichier = $pictureService->add($image, $folder, 300, 300);
-
-                $img = new Images();
-                $img->setName($fichier);
-                $recipe->addImage($img);
-            }
-            $em->persist($recipe);
-            $em->flush();
-            $this->addFlash('success', 'Votre recette a été créée avec succès!');
-            return $this->redirectToRoute("app_recette");
-        }
-        return $this->render('pages/recipe/new.html.twig', [
-            'form' => $form->createView(),
-
-        ]);
-    }
 
     /**
      * this controller allow us to edit a recipe

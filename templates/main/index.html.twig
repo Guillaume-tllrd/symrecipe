@@ -11,7 +11,7 @@
 			<hr class="my-4">
 			<p>Pour commencer, rendez-vous sur la page d'inscription pour utiliser l'application..</p>
 			<p class="lead">
-				<a class="btn btn-primary btn-lg" href="#" role="button">Inscription</a>
+				<a class="btn btn-primary btn-lg" href="{{path('app_registration')}}" role="button">Inscription</a>
 			</p>
 		</div>
 		<div class="recipes">
@@ -19,7 +19,7 @@
 			<div class="d-flex justify-content-between flex-wrap">
 				{% for recipe in recipes %}
 					<div class="card border-primary mb-3" style="max-width: 20rem;">
-						<div class="card-header">Recete n°
+						<div class="card-header">Recette n°
 							{{recipe.id}}</div>
 						<div class="card-body">
 							<h4 class="card-title">{{recipe.name}}</h4>
