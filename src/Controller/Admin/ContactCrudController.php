@@ -10,6 +10,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextEditorField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
+use FOS\CKEditorBundle\Form\Type\CKEditorType;
 
 class ContactCrudController extends AbstractCrudController
 {
@@ -23,7 +24,10 @@ class ContactCrudController extends AbstractCrudController
         return $crud->setEntityLabelInSingular('Demande de contact')
             ->setEntityLabelInPlural('Demandes de contact')
             ->setPageTitle("index", 'Symrecipe - Administration des demandes de contact')
-            ->setPaginatorPageSize(20);
+            ->setPaginatorPageSize(20)
+            // ->addFormTheme('@FOSCKEditor/Form/ckeditor_widget.html.twig')
+        ;
+        // pour addFormTheme il faut rajouter ce qu'on trouve dans configure twig: https://symfony.com/bundles/FOSCKEditorBundle/current/installation.html
     }
 
     public function configureFields(string $pageName): iterable
@@ -33,7 +37,9 @@ class ContactCrudController extends AbstractCrudController
             TextField::new('fullName'),
             TextField::new('email')
                 ->setFormTypeOption('disabled', 'disabled'),
-            TextareaField::new('message'),
+            TextEditorField::new('message'), // j'ai supprimé ckeditor car ne marchait pas avec la version 7.2 de symfony sinon demandait la version sous licence ->setFormType(CKEditorType::class)->setFormTypeOptions([
+            //     'config_name' => 'main_config', // Utilise votre configuration CKEditor
+            // ]),
             DateTimeField::new('createdAt')
                 ->hideOnForm()
         ];

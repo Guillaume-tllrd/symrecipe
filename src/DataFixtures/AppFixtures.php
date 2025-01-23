@@ -29,6 +29,16 @@ class AppFixtures extends Fixture
         // Users
         // on change on met users en 1er, on l'instancie dans un tableau pour pouvoir les utilisés aléatoirement dans la création des ingrédients setUser..
         $users = [];
+        // pour créer un admin:
+        $admin = new User();
+        $admin->setFullName('Administrateur de SymRecipe')
+            ->setPseudo(null)
+            ->setEmail('admin@symrecipe.fr')
+            ->setRoles(['ROLE_USER', 'ROLE_ADMIN'])
+            ->setPlainPassword('azerty');
+
+        $users[] = $admin;
+        $manager->persist($admin);
         for ($u = 0; $u < 10; $u++) {
             $user = new User();
             $user->setFullName($this->faker->name())
