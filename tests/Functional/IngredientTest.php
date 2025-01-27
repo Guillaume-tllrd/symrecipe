@@ -92,4 +92,28 @@ class IngredientTest extends WebTestCase
 
         $this->assertRouteSame('app_ingredients');
     }
+
+    public function testIfDeleteAnIngredientIsSuccessful(): void
+    {
+
+        $client = static::createClient();
+        $urlGenerator = $client->getContainer()->get('router');
+        // recup entity manager
+        $entityManager = $client->getContainer()->get('doctrine.orm.entity_manager');
+        // on récup le 1er utilisateur:
+        $user = $entityManager->find(User::class, 1);
+        $ingredient = $entityManager->getRepository(Ingredient::class)->findOneBy([
+            'user' => $user
+        ]);
+        $client->loginUser($user);
+
+        // se rendre sur la page d'édition d'un ingrédient , faire passer l'id
+        $crawler = $client->request(Request::METHOD_GET, $urlGenerator->generate('delete_ingredient', ['id' => $ingredient->getId()]));
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_FOUND);
+        $client->followRedirect();
+        $this->assertSelectorTextContains('div.alert-success', "votre ingrédient a été supprimé avec succès!");
+
+        $this->assertRouteSame('app_ingredients');
+    }
 }
