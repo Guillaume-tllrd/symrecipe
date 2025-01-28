@@ -13,10 +13,12 @@ use App\Service\PictureService;
 use Doctrine\ORM\EntityManagerInterface;
 use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Contracts\Cache\ItemInterface;
 
 class RecipeController extends AbstractController
 {
@@ -91,8 +93,19 @@ class RecipeController extends AbstractController
         RecipeRepository $recipeRepository,
         Request $request
     ): Response {
+
+        $cache = new FilesystemAdapter();
+        // on créé une var data pour récupérer le contenue qui est mis en cache via une clé, le FilesystemAdapter à une méthode qui s'appelle get et qui demande une clé qu'on appelle recipes, s'il ne l'a pas il demande un callable qu'on symbolise avec une function qui prend ItemInterface et on lui demande de faire un return des recettes publique avec le repository. On est obligé d'utiliser use car sinon le repository n'est pas reconnu
+        $data = $cache->get('recipes', function (ItemInterface $item) use ($recipeRepository) {
+            // on met en place le systeme d'expiration avec itemInterface:
+            $item->expiresAfter(15);
+            // ne pas oublier le return
+            return $recipeRepository->findPulicRecipe(null);
+        });
+
         $recipes = $paginator->paginate(
-            $recipeRepository->findPulicRecipe(null),
+            // $recipeRepository->findPulicRecipe(null),:on remplace le repository avec data du cache
+            $data,
             $request->query->getInt('page', 1),
             10
         );

@@ -24,7 +24,7 @@ class RecipeRepository extends ServiceEntityRepository
      */
     public function findPulicRecipe(?int $nbRecipes): array
     {
-
+        sleep(3);
         $queryBuilder = $this->createQueryBuilder('r')->where('r.isPublic = 1')
             ->orderBy('r.created_at', 'DESC');
         // si on lui passe aucun paramètre il envoie le nbre max

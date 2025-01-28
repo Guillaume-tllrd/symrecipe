@@ -45,11 +45,11 @@
 
 
 		{# {% for image in recipe.images %}
-													<div>
-														<img src="{{ asset('assets/uploads/recipes/mini/300x300-' ~ image.name ) }}" alt="Image" width="150">
-										
-													</div>
-												{% endfor %} #}
+															<div>
+																<img src="{{ asset('assets/uploads/recipes/mini/300x300-' ~ image.name ) }}" alt="Image" width="150">
+												
+															</div>
+														{% endfor %} #}
 
 
 		<p>La moyenne de cette recette est de
@@ -59,7 +59,7 @@
 		<div class="mt-4">
 			{% if recipe.time %}
 				<p>Temps (en minutes) :
-					{{recipe.time}}</p>
+					{{recipe.time|min_to_hour}}</p>
 			{% else %}
 				<p>Temps non renseigné.</p>
 			{% endif %}
